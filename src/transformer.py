@@ -9,9 +9,11 @@ from dataclasses import dataclass
 # Configurations and Enums
 # ------------------------
 
+
 class PositionalEncodings(Enum):
     SINUSOID = auto()
     LEARNED = auto()
+
 
 @dataclass
 class TransformerConfig:
@@ -37,6 +39,7 @@ class TransformerConfig:
 # --------------------
 # Multi-Head Attention
 # --------------------
+
 
 class MultiHeadDotProductAttention(nn.Module):
     def __init__(self, num_heads: int, num_hiddens_per_head: int, embedding_size: int, apply_qk_layernorm: bool = False):
@@ -70,9 +73,12 @@ class MultiHeadDotProductAttention(nn.Module):
 
         B, T, _ = q.shape
         # Reshape into (B, num_heads, T, num_hiddens_per_head)
-        q = q.view(B, T, self.num_heads, self.num_hiddens_per_head).transpose(1, 2)
-        k = k.view(B, T, self.num_heads, self.num_hiddens_per_head).transpose(1, 2)
-        v = v.view(B, T, self.num_heads, self.num_hiddens_per_head).transpose(1, 2)
+        q = q.view(B, T, self.num_heads,
+                   self.num_hiddens_per_head).transpose(1, 2)
+        k = k.view(B, T, self.num_heads,
+                   self.num_hiddens_per_head).transpose(1, 2)
+        v = v.view(B, T, self.num_heads,
+                   self.num_hiddens_per_head).transpose(1, 2)
 
         # Compute attention scores
         attn_scores = torch.einsum('bhqd, bhkd -> bhqk', q, k)
@@ -91,6 +97,7 @@ class MultiHeadDotProductAttention(nn.Module):
 # Positional Encodings
 # --------------------
 
+
 def sinusoid_position_encoding(sequence_length: int, hidden_size: int, max_timescale: float = 1e4) -> torch.Tensor:
     pos = torch.arange(sequence_length, dtype=torch.float32).unsqueeze(1)
     dim = torch.arange(0, hidden_size, 2, dtype=torch.float32)
@@ -105,6 +112,7 @@ def sinusoid_position_encoding(sequence_length: int, hidden_size: int, max_times
 # Embedding with Positional Encodings
 # -----------------------------------
 
+
 class EmbedSequences(nn.Module):
     def __init__(self, config: TransformerConfig):
         super().__init__()
@@ -113,7 +121,8 @@ class EmbedSequences(nn.Module):
 
         if config.pos_encodings == PositionalEncodings.LEARNED:
             assert config.max_sequence_length is not None
-            self.pos_emb = nn.Embedding(config.max_sequence_length, config.embedding_dim)
+            self.pos_emb = nn.Embedding(
+                config.max_sequence_length, config.embedding_dim)
         else:
             self.pos_emb = None
         nn.init.trunc_normal_(self.token_emb.weight, std=config.emb_init_scale)
@@ -137,14 +146,17 @@ class EmbedSequences(nn.Module):
 # Utility: Shift Right
 # --------------------
 
+
 def shift_right(sequences: torch.Tensor) -> torch.Tensor:
-    bos = torch.zeros(sequences.size(0), 1, dtype=sequences.dtype, device=sequences.device)
+    bos = torch.zeros(sequences.size(
+        0), 1, dtype=sequences.dtype, device=sequences.device)
     padded = torch.cat([bos, sequences], dim=1)
     return padded[:, :-1]
 
 # ---------------------
 # MLP/Feedforward Block
 # ---------------------
+
 
 class MLPBlock(nn.Module):
     def __init__(self, config: TransformerConfig):
@@ -165,8 +177,10 @@ class MLPBlock(nn.Module):
 # Transformer Layer
 # -----------------
 
+
 class TransformerLayer(nn.Module):
     """A single Transformer layer containing attention and MLP blocks with residual connections"""
+
     def __init__(self, config: TransformerConfig):
         super().__init__()
         self.config = config
@@ -187,7 +201,8 @@ class TransformerLayer(nn.Module):
         x_norm = self.attn_ln(x)
         if self.use_causal_mask:
             B, T, _ = x.shape
-            mask = torch.tril(torch.ones((T, T), device=x.device)).unsqueeze(0).unsqueeze(0)
+            mask = torch.tril(torch.ones((T, T), device=x.device)
+                              ).unsqueeze(0).unsqueeze(0)
             mask = mask.expand(B, 1, T, T)
         else:
             mask = None
@@ -205,15 +220,20 @@ class TransformerLayer(nn.Module):
 # Transformer Decoder
 # -------------------
 
+
 class TransformerDecoder(nn.Module):
     """The complete Transformer decoder with input embedding, multiple layers, and output projection"""
+
     def __init__(self, config: TransformerConfig):
         super().__init__()
         self.config = config
         self.embed_sequences = EmbedSequences(config)
-        self.layers = nn.ModuleList([TransformerLayer(config) for _ in range(config.num_layers)])
-        self.post_ln = nn.LayerNorm(config.embedding_dim) if config.apply_post_ln else None
-        self.output_linear = nn.Linear(config.embedding_dim, config.output_size)
+        self.layers = nn.ModuleList(
+            [TransformerLayer(config) for _ in range(config.num_layers)])
+        self.post_ln = nn.LayerNorm(
+            config.embedding_dim) if config.apply_post_ln else None
+        self.output_linear = nn.Linear(
+            config.embedding_dim, config.output_size)
 
     def forward(self, targets: torch.Tensor) -> torch.Tensor:
         # Targets: (B, T)
@@ -231,6 +251,7 @@ class TransformerDecoder(nn.Module):
 # Predictor Wrapper
 # -----------------
 
+
 class Predictor:
     def __init__(self, model: nn.Module):
         self.model = model
@@ -239,6 +260,7 @@ class Predictor:
         self.model.eval()
         with torch.no_grad():
             return self.model(targets)
+
 
 def build_transformer_predictor(config: TransformerConfig) -> Predictor:
     model = TransformerDecoder(config)
