@@ -5,10 +5,10 @@ import torch.nn.functional as F
 from enum import Enum, auto
 from dataclasses import dataclass
 
+
 # ------------------------
 # Configurations and Enums
 # ------------------------
-
 
 class PositionalEncodings(Enum):
     SINUSOID = auto()
@@ -39,7 +39,6 @@ class TransformerConfig:
 # --------------------
 # Multi-Head Attention
 # --------------------
-
 
 class MultiHeadDotProductAttention(nn.Module):
     def __init__(self, num_heads: int, num_hiddens_per_head: int, embedding_size: int, apply_qk_layernorm: bool = False):
@@ -97,7 +96,6 @@ class MultiHeadDotProductAttention(nn.Module):
 # Positional Encodings
 # --------------------
 
-
 def sinusoid_position_encoding(sequence_length: int, hidden_size: int, max_timescale: float = 1e4) -> torch.Tensor:
     pos = torch.arange(sequence_length, dtype=torch.float32).unsqueeze(1)
     dim = torch.arange(0, hidden_size, 2, dtype=torch.float32)
@@ -111,7 +109,6 @@ def sinusoid_position_encoding(sequence_length: int, hidden_size: int, max_times
 # -----------------------------------
 # Embedding with Positional Encodings
 # -----------------------------------
-
 
 class EmbedSequences(nn.Module):
     def __init__(self, config: TransformerConfig):
@@ -146,7 +143,6 @@ class EmbedSequences(nn.Module):
 # Utility: Shift Right
 # --------------------
 
-
 def shift_right(sequences: torch.Tensor) -> torch.Tensor:
     bos = torch.zeros(sequences.size(
         0), 1, dtype=sequences.dtype, device=sequences.device)
@@ -156,7 +152,6 @@ def shift_right(sequences: torch.Tensor) -> torch.Tensor:
 # ---------------------
 # MLP/Feedforward Block
 # ---------------------
-
 
 class MLPBlock(nn.Module):
     def __init__(self, config: TransformerConfig):
@@ -176,7 +171,6 @@ class MLPBlock(nn.Module):
 # -----------------
 # Transformer Layer
 # -----------------
-
 
 class TransformerLayer(nn.Module):
     """A single Transformer layer containing attention and MLP blocks with residual connections"""
@@ -209,7 +203,7 @@ class TransformerLayer(nn.Module):
         attn_out = self.attention(x_norm, x_norm, mask)
         x = residual + attn_out
 
-        # MLP block with residual connection.
+        # MLP block with residual connection
         residual = x
         x_norm = self.mlp_ln(x)
         mlp_out = self.mlp(x_norm)
@@ -219,7 +213,6 @@ class TransformerLayer(nn.Module):
 # -------------------
 # Transformer Decoder
 # -------------------
-
 
 class TransformerDecoder(nn.Module):
     """The complete Transformer decoder with input embedding, multiple layers, and output projection"""
@@ -251,7 +244,6 @@ class TransformerDecoder(nn.Module):
 # Predictor Wrapper
 # -----------------
 
-
 class Predictor:
     def __init__(self, model: nn.Module):
         self.model = model
@@ -265,3 +257,42 @@ class Predictor:
 def build_transformer_predictor(config: TransformerConfig) -> Predictor:
     model = TransformerDecoder(config)
     return Predictor(model)
+
+# ---------
+# Test Case
+# ---------
+
+def test_transformer_forward_pass():
+    config = TransformerConfig(
+        vocab_size=100,
+        embedding_dim=32,
+        num_layers=2,
+        num_heads=4,
+        widening_factor=2,
+        use_causal_mask=True,
+        pos_encodings=PositionalEncodings.SINUSOID,
+        max_sequence_length=20,
+    )
+
+    predictor = build_transformer_predictor(config)
+    model = predictor.model
+
+    batch_size = 3
+    seq_length = 10
+    inputs = torch.randint(0, config.vocab_size, (batch_size, seq_length))
+
+    outputs = model(inputs)  # (B, T, vocab_size)
+
+    # Check shapes
+    assert outputs.shape == (batch_size, seq_length, config.vocab_size), "Output shape is incorrect"
+
+    # Check that log probs sum to 1
+    probs = torch.exp(outputs)
+    probs_sum = probs.sum(dim=-1)  # (B, T)
+    assert torch.allclose(probs_sum, torch.ones_like(probs_sum), atol=1e-4), "Log-softmax outputs don't sum to 1"
+
+    print("Transformer forward pass test passed!")
+
+
+if __name__ == "__main__":
+    test_transformer_forward_pass()
