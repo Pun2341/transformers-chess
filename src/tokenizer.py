@@ -37,11 +37,13 @@ _CHARACTERS = [
 
 _INDEX = {letter: index for index, letter in enumerate(_CHARACTERS)}
 _SPACES = frozenset({'1', '2', '3', '4', '5', '6', '7', '8'})
+
 SEQUENCE_LENGTH = 77
 
 
 def tokenize(fen: str) -> torch.tensor:
-    """Returns an array of tokens from FEN string
+    """
+    Returns an array of tokens from FEN string
 
     Args:
         fen (str): FEN string to tokenize
@@ -52,12 +54,14 @@ def tokenize(fen: str) -> torch.tensor:
 
     indices = [_INDEX['w'] if color == 'w' else _INDEX['black']]
 
+    # Board
     for char in board:
         if char in _SPACES:
             indices.extend([_INDEX['.']] * int(char))
         else:
             indices.append(_INDEX[char])
 
+    # Castling
     if castling == '-':
         indices.extend([_INDEX['.']] * 4)
     else:
@@ -66,15 +70,18 @@ def tokenize(fen: str) -> torch.tensor:
         if len(castling) < 4:
             indices.extend([_INDEX['.']] * (4 - len(castling)))
 
+    # En passant
     if en_passant == '-':
         indices.extend([_INDEX['.']] * 2)
     else:
         for char in en_passant:
             indices.append(_INDEX[char])
 
+    # Halfmoves
     halfmoves += '.' * (3 - len(halfmoves))
     indices.extend([_INDEX[x] for x in halfmoves])
 
+    # Fullmoves
     fullmoves += '.' * (3 - len(fullmoves))
     indices.extend([_INDEX[x] for x in fullmoves])
 
