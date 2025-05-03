@@ -1,14 +1,14 @@
-import engine
-from transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
-from utils import NUM_ACTIONS
-from tokenizer import SEQUENCE_LENGTH
+from src.engine import Engine
+from src.transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
+from src.utils import MOVE_TO_ACTION
+from src.tokenizer import SEQUENCE_LENGTH
 import torch
 
 num_return_buckets = 128
 
 
 def get_predictor(model_path, transformer_config):
-    device = "cuda"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = TransformerDecoder(transformer_config)
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['model_state'])
@@ -17,9 +17,9 @@ def get_predictor(model_path, transformer_config):
 
 
 if __name__ == "__main__":
-    model_path = "transformers_chess/checkpoints/Checkpoint_Epoch_33770.pt"
+    model_path = "src/Checkpoint_Epoch_33770.pt"
     transformer_config = TransformerConfig(
-        vocab_size=NUM_ACTIONS,
+        vocab_size=len(MOVE_TO_ACTION),
         output_size=num_return_buckets,
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     predictor = get_predictor(model_path, transformer_config)
     starting_board = None
-    chess_engine = engine.Engine(predictor, starting_board)
+    chess_engine = Engine(predictor, starting_board)
 
     while True:
         color = input("Black or White? ")
