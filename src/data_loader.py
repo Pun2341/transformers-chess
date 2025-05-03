@@ -1,10 +1,9 @@
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-from tokenizer import process_fen, process_move, CODERS
-from utils import Policy
-from bagz import BagReader
-import tokenizer
+from src.tokenizer import process_fen, process_move, CODERS, SEQUENCE_LENGTH
+from src.utils import Policy
+from src.bagz import BagReader
 
 
 def _process_win_prob(
@@ -38,8 +37,7 @@ class ChessDataset(Dataset):
         self._return_buckets_edges, _ = _get_uniform_buckets_edges_values(
             num_return_buckets,
         )
-        self._sequence_length = tokenizer.SEQUENCE_LENGTH + \
-            2 if policy == Policy.ACTION_VALUE else tokenizer.SEQUENCE_LENGTH + 1
+        self._sequence_length = SEQUENCE_LENGTH + 2 if policy == Policy.ACTION_VALUE else SEQUENCE_LENGTH + 1
         self._loss_mask = np.full(
             shape=(self._sequence_length,),
             fill_value=True,
@@ -55,6 +53,10 @@ class ChessDataset(Dataset):
 
         if self.policy == Policy.ACTION_VALUE:
             fen, move, win_prob = CODERS['action_value'].decode(record)
+            if len(fen.split(' ')) != 6:
+                raise ValueError(
+                    f"Invalid FEN string: {fen} at index {idx}")
+
             state = process_fen(fen)
             action = process_move(move)
             return_bucket = _process_win_prob(
@@ -73,5 +75,4 @@ class ChessDataset(Dataset):
             sequence = torch.concatenate([state, action])
         else:
             raise ValueError(f"Unknown policy type: {self.policy}")
-
         return sequence, self._loss_mask
