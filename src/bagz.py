@@ -1,37 +1,37 @@
 import struct
 import mmap
+import zstandard as zstd
 
 
 class BagReader:
     def __init__(self, filename):
         self.filename = filename
         self._open_file()
+        self._process = lambda x: zstd.decompress(x) if x else x
 
     def _open_file(self):
         self.file = open(self.filename, 'rb')
-        self.mm = mmap.mmap(self.file.fileno(), 0, access=mmap.ACCESS_READ)
+        self._records = mmap.mmap(
+            self.file.fileno(), 0, access=mmap.ACCESS_READ)
+        file_size = self._records.size()
 
-        self.mm.seek(-8, 2)
         (index_start,) = struct.unpack('<Q', self.mm.read(8))
 
         self.index_start = index_start
-        self.num_records = (len(self.mm) - index_start) // 8
-
-        self.offsets = []
-        self.mm.seek(index_start)
-        for _ in range(self.num_records):
-            (offset,) = struct.unpack('<Q', self.mm.read(8))
-            self.offsets.append(offset)
+        self.num_records = (file_size - index_start) // 8
 
     def __len__(self):
         return self.num_records
 
     def __getitem__(self, idx):
-        start = self.offsets[idx]
-        end = self.offsets[idx + 1] if idx + \
-            1 < self.num_records else self.index_start
-        self.mm.seek(start)
-        return self.mm.read(end - start)
+        if not 0 <= idx < self._num_records:
+            raise IndexError('BagReader index out of range')
+
+        end = idx * 8 + self.index_start
+
+        rec_range = struct.unpack('<2q', self._records[end - 8: end + 8])
+
+        return self._process(self._records[slice(*rec_range)])
 
     def close(self):
         self.mm.close()

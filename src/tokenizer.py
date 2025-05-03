@@ -1,4 +1,38 @@
 import torch
+from apache_beam import coders
+from utils import MOVE_TO_ACTION, ACTION_TO_MOVE
+
+CODERS = {
+    'fen': coders.StrUtf8Coder(),
+    'move': coders.StrUtf8Coder(),
+    'count': coders.BigIntegerCoder(),
+    'win_prob': coders.FloatCoder(),
+}
+
+CODERS['action_value'] = coders.TupleCoder((
+    CODERS['fen'],
+    CODERS['move'],
+    CODERS['win_prob'],
+))
+
+CODERS['state_value'] = coders.TupleCoder((
+    CODERS['fen'],
+    CODERS['win_prob'],
+))
+
+CODERS['behavioral_cloning'] = coders.TupleCoder((
+    CODERS['fen'],
+    CODERS['move'],
+))
+
+
+def process_fen(fen: str) -> torch.tensor:
+    return _tokenize(fen)
+
+
+def process_move(move: str) -> torch.tensor:
+    return torch.tensor([MOVE_TO_ACTION[move]])
+
 
 _CHARACTERS = [
     '0',
@@ -41,7 +75,7 @@ _SPACES = frozenset({'1', '2', '3', '4', '5', '6', '7', '8'})
 SEQUENCE_LENGTH = 77
 
 
-def tokenize(fen: str) -> torch.tensor:
+def _tokenize(fen: str) -> torch.tensor:
     """
     Returns an array of tokens from FEN string
 

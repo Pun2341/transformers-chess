@@ -1,30 +1,10 @@
 import torch
+import numpy as np
 from torch.utils.data import Dataset
-from tokenizer import tokenize
-from utils import Policy, MOVE_TO_ACTION, ACTION_TO_MOVE
+from tokenizer import process_fen, process_move, CODERS
+from utils import Policy
 from bagz import BagReader
-from apache_beam import coders
-
-CODERS = {
-    'fen': coders.StrUtf8Coder(),
-    'move': coders.StrUtf8Coder(),
-    'count': coders.BigIntegerCoder(),
-    'win_prob': coders.FloatCoder(),
-}
-
-CODERS['action_value'] = coders.TupleCoder((
-    CODERS['fen'],
-    CODERS['move'],
-    CODERS['win_prob'],
-))
-
-
-def _process_fen(fen: str) -> torch.tensor:
-    return tokenize(fen)
-
-
-def _process_move(move: str) -> torch.tensor:
-    return torch.tensor([MOVE_TO_ACTION[move]])
+import tokenizer
 
 
 def _process_win_prob(
@@ -58,6 +38,14 @@ class ChessDataset(Dataset):
         self._return_buckets_edges, _ = _get_uniform_buckets_edges_values(
             num_return_buckets,
         )
+        self._sequence_length = tokenizer.SEQUENCE_LENGTH + \
+            2 if policy == Policy.ACTION_VALUE else tokenizer.SEQUENCE_LENGTH + 1
+        self._loss_mask = np.full(
+            shape=(self._sequence_length,),
+            fill_value=True,
+            dtype=bool,
+        )
+        self._loss_mask[-1] = False
 
     def __len__(self):
         return len(self.bag_reader)
@@ -67,13 +55,23 @@ class ChessDataset(Dataset):
 
         if self.policy == Policy.ACTION_VALUE:
             fen, move, win_prob = CODERS['action_value'].decode(record)
-            state = _process_fen(fen)
-            action = _process_move(move)
+            state = process_fen(fen)
+            action = process_move(move)
             return_bucket = _process_win_prob(
                 win_prob, self._return_buckets_edges)
-            sequence = torch.from_numpy(
-                torch.concatenate([state, action, return_bucket]))
+            sequence = torch.concatenate([state, action, return_bucket])
+        elif self.policy == Policy.STATE_VALUE:
+            fen, win_prob = CODERS['state_value'].decode(record)
+            state = process_fen(fen)
+            return_bucket = _process_win_prob(
+                win_prob, self._return_buckets_edges)
+            sequence = torch.concatenate([state, return_bucket])
+        elif self.policy == Policy.BEHAVIORAL_CLONING:
+            fen, move = CODERS['behavioral_cloning'].decode(record)
+            state = process_fen(fen)
+            action = process_move(move)
+            sequence = torch.concatenate([state, action])
         else:
             raise ValueError(f"Unknown policy type: {self.policy}")
 
-        return sequence
+        return sequence, self._loss_mask
