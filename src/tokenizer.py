@@ -1,6 +1,6 @@
 import torch
 from apache_beam import coders
-from utils import MOVE_TO_ACTION, ACTION_TO_MOVE
+from src.utils import MOVE_TO_ACTION
 
 CODERS = {
     'fen': coders.StrUtf8Coder(),

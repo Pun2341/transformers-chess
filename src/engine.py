@@ -1,6 +1,6 @@
-from transformer import Predictor
+from src.transformer import Predictor
+from src.tokenizer import process_fen, process_move
 import torch
-from tokenizer import process_fen, process_move
 import chess
 
 

@@ -1,7 +1,7 @@
-import engine
-from transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
-from utils import NUM_ACTIONS
-from tokenizer import SEQUENCE_LENGTH
+import src.engine
+from src.transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
+from src.utils import NUM_ACTIONS
+from src.tokenizer import SEQUENCE_LENGTH
 import torch
 
 num_return_buckets = 128

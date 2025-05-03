@@ -1,10 +1,9 @@
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-from tokenizer import process_fen, process_move, CODERS
-from utils import Policy
-from bagz import BagReader
-import tokenizer
+from src.tokenizer import process_fen, process_move, CODERS
+from src.utils import Policy
+from src.bagz import BagReader
 
 
 def _process_win_prob(
@@ -55,6 +54,10 @@ class ChessDataset(Dataset):
 
         if self.policy == Policy.ACTION_VALUE:
             fen, move, win_prob = CODERS['action_value'].decode(record)
+            if len(fen.split(' ')) != 6:
+                raise ValueError(
+                    f"Invalid FEN string: {fen} at index {idx}")
+
             state = process_fen(fen)
             action = process_move(move)
             return_bucket = _process_win_prob(
@@ -73,5 +76,4 @@ class ChessDataset(Dataset):
             sequence = torch.concatenate([state, action])
         else:
             raise ValueError(f"Unknown policy type: {self.policy}")
-
         return sequence, self._loss_mask
