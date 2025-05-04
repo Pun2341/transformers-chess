@@ -52,3 +52,4 @@ if __name__ == "__main__":
         move = chess_engine.human_play(move)
         if move is None:
             print("Illegal move, try again.")
+        chess_engine.computer_play()
