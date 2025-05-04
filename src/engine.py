@@ -22,6 +22,7 @@ class Engine:
             print(bucket)
             if bucket > best_bucket:
                 best_move = move
+                best_bucket = bucket
         return best_move
 
     def _get_bucket(self, predictor, move):
@@ -31,11 +32,13 @@ class Engine:
         result = predictor.predict(sequence.view(1, 78))
         print(result.shape)
         print(result[0][-1])
-        return torch.argmax(result[0][-2])
+        return torch.argmax(result[0][-1])
 
     def computer_play(self):
         computer_move = self.get_best_move()
+        move_san = self.board.san(computer_move)
         self.board.push(computer_move)
+        print("Computer plays:", move_san)
         return computer_move
 
     def human_play(self, move):

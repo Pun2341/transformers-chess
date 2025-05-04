@@ -39,7 +39,6 @@ if __name__ == "__main__":
         color = input("Black or White? ")
         if color.lower() == "black":
             move = chess_engine.computer_play()
-            print("Computer plays: ", move)
             break
         elif color.lower() == "white":
             break
@@ -53,5 +52,3 @@ if __name__ == "__main__":
         move = chess_engine.human_play(move)
         if move is None:
             print("Illegal move, try again.")
-        else:
-            print("Computer plays: ", move)
