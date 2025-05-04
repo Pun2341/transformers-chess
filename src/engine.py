@@ -46,6 +46,5 @@ class Engine:
         move = self.board.parse_san(move)
         if move in legal_moves:
             self.board.push(move)
-            computer_move = self.computer_play()
-            return computer_move
+            return move
         return None
