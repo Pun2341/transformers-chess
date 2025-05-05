@@ -19,7 +19,7 @@ class Engine:
         for move in legal_moves:
             bucket = self._get_bucket(
                 self.predictor, move.uci()).item()
-            print(bucket)
+            # print(bucket)
             if bucket > best_bucket:
                 best_move = move
                 best_bucket = bucket
@@ -30,7 +30,7 @@ class Engine:
         action = process_move(move)
         sequence = torch.cat([state, action, torch.Tensor([0]).to(torch.uint8)])
         result = predictor.predict(sequence.view(1, 79))
-        print(result)
+        # print(result)
         return torch.argmax(result[0][-1])
 
     def computer_play(self):
