@@ -28,10 +28,9 @@ class Engine:
     def _get_bucket(self, predictor, move):
         state = process_fen(self.board.fen())
         action = process_move(move)
-        sequence = torch.cat([state, action])
-        result = predictor.predict(sequence.view(1, 78))
-        print(result.shape)
-        print(result[0][-1])
+        sequence = torch.cat([state, action, torch.Tensor([0]).to(torch.uint8)])
+        result = predictor.predict(sequence.view(1, 79))
+        print(result)
         return torch.argmax(result[0][-1])
 
     def computer_play(self):
