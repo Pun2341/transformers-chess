@@ -1,13 +1,19 @@
 # app/backend/app.py
-import chess
+# uvicorn app:app --reload --host 0.0.0.0 --port 8000
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from bot import Bot
+
 
 class MoveRequest(BaseModel):
     fen: str
 
+
+PATH = "../../checkpoints/CheckpointEpoch3Step80000.pt"
+
 app = FastAPI()
+bot = Bot(PATH)
 
 # Allow the React dev server (on localhost:3000) to talk to us
 app.add_middleware(
@@ -17,21 +23,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/move")
 async def move(req: MoveRequest):
     """
     Dummy Black reply: always play e7e5 if legal; otherwise the first legal move.
     """
+
     try:
-        board = chess.Board(req.fen)
+        move = bot.nextMove(req.fen)
+        return {"uci": move.uci()}
     except Exception as e:
         raise HTTPException(400, detail=f"Invalid FEN: {e}")
-
-    desired = chess.Move.from_uci("e7e5")
-    if desired in board.legal_moves:
-        reply = desired
-    else:
-        # fallback to any legal move
-        reply = next(iter(board.legal_moves))
-
-    return {"uci": reply.uci()}
