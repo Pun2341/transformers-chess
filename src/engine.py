@@ -2,6 +2,7 @@ from src.transformer import Predictor
 from src.tokenizer import process_fen, process_move
 import torch
 import chess
+import random
 
 
 class Engine:
@@ -14,16 +15,26 @@ class Engine:
 
     def get_best_move(self):
         legal_moves = self.board.legal_moves
-        best_move = None
+        best_move = []
         best_bucket = -1
+        # all_moves = []
         for move in legal_moves:
             bucket = self._get_bucket(
                 self.predictor, move.uci()).item()
+            # all_moves.append((bucket, move))
             # print(bucket)
             if bucket > best_bucket:
-                best_move = move
+                best_move = [move]
                 best_bucket = bucket
-        return best_move
+            elif bucket == best_bucket:
+                best_move.append(move)
+        # all_moves.sort(key=lambda x: x[0])
+        # all_moves.reverse()
+        # print(all_moves)
+        rand = random.randint(0, len(best_move)-1)
+        # print("-----------")
+        # print(best_move)
+        return best_move[rand]
 
     def _get_bucket(self, predictor, move):
         state = process_fen(self.board.fen())
