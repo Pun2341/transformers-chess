@@ -43,8 +43,8 @@ def play_game(predictor_white, predictor_black, max_moves=250):
 
 
 def main():
-    model_path_1 = "src/checkpoint_epoch1_20250506_031310.pt"
-    model_path_2 = "src/checkpoint_epoch3_20250506_042529.pt"
+    model_path_1 = "src/checkpoint_epoch2_20250506_040633.pt"
+    model_path_2 = "src/checkpoint_epoch2_20250504_102007.pt"
 
     config1 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
@@ -65,7 +65,7 @@ def main():
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
         num_heads=4,
-        num_layers=2,
+        num_layers=4,
         embedding_dim=64,
         apply_post_ln=True,
         apply_qk_layernorm=False,
