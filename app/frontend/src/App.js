@@ -2,13 +2,17 @@ import React, { useState, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import {Chessboard} from 'react-chessboard';
 
+function calculateBoardWidth() {
+  const padding = 20;
+  const minDimension = Math.min(window.innerWidth, window.innerHeight);
+  return Math.max(minDimension - padding, 300);
+}
+
 function ChessGame() {
   const [game, setGame] = useState(new Chess());
   const [fen, setFen] = useState(game.fen());
 
   function doPlayerMove(sourceSquare, targetSquare) {
-    if (game.isGameOver()) return false;
-
     try {
       game.move({
         from: sourceSquare,
@@ -23,8 +27,6 @@ function ChessGame() {
   }
   
   const doCompMove = useCallback(async (sourceSquare, targetSquare) => {
-    if (game.isGameOver()) return false;
-
     try {
       const res = await fetch('/move', {
         method: 'POST',
@@ -43,22 +45,33 @@ function ChessGame() {
   }, [game]);
 
   function onDrop(sourceSquare, targetSquare) {
-    if (!doPlayerMove(sourceSquare, targetSquare)) return false;
+    if (game.turn() !== 'w') return false
+    if (game.isGameOver()) {
+      return true;
+    }
 
+    if (!doPlayerMove(sourceSquare, targetSquare)) return false;
+    
+    if (game.isGameOver()) {
+      return true;
+    }
     doCompMove();
 
     return true;
   }
 
-  return (
+  return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div>
+      <p>{game.isGameOver() ? 'Game Over' : ''}</p>
+    </div>
     <div>
       <Chessboard
         position={fen}
-        boardWidth={750}
+        boardWidth={calculateBoardWidth()}
         onPieceDrop={onDrop}
       />
     </div>
-  );
+  </div>);
 }
 
 export default ChessGame;
