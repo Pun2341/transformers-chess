@@ -35,12 +35,14 @@ class Engine:
                 self.predictor, move).item()
             if bucket > best_bucket:
                 best_move = move
+                best_bucket = bucket
         return best_move
 
     def _get_bucket(self, predictor, move):
         state = process_fen(self.board.fen())
         action = process_move(move)
-        sequence = torch.cat([state, action, torch.Tensor([0]).to(torch.uint8)])
+        sequence = torch.cat(
+            [state, action, torch.Tensor([0]).to(torch.uint8)])
         result = predictor.predict(sequence.view(1, 79))
         # print(result)
         return torch.argmax(result[0][-1])
