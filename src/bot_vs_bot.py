@@ -16,7 +16,7 @@ def get_predictor(model_path, transformer_config):
     return predictor
 
 
-def play_game(predictor_white, predictor_black, max_moves=100):
+def play_game(predictor_white, predictor_black, max_moves=250):
     board = chess.Board()
     engine_white = Engine(predictor_white, starting_fen=board.fen())
     engine_black = Engine(predictor_black, starting_fen=board.fen())
@@ -38,57 +38,89 @@ def play_game(predictor_white, predictor_black, max_moves=100):
         move_count += 1
 
     if move_count >= max_moves and not board.is_game_over():
-        return "1/2-1/2", move_count  # Treated as draw
-    return board.result(), move_count
+        return "1/2-1/2", move_count, board.fen()  # Treated as draw
+    return board.result(), move_count, board.fen()
 
 
 def main():
-    model_path_1 = "src/checkpoint_epoch_74007.pt"
-    model_path_2 = "src/checkpoint_epoch1_20250504_092552.pt"
+    model_path_1 = "src/checkpoint_epoch1_20250506_031310.pt"
+    model_path_2 = "src/checkpoint_epoch3_20250506_042529.pt"
 
-    config = TransformerConfig(
+    config1 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
         output_size=128,
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
         num_heads=4,
-        num_layers=4,
+        num_layers=2,
+        embedding_dim=64,
+        apply_post_ln=True,
+        apply_qk_layernorm=False,
+        use_causal_mask=False,
+    )
+    
+    config2 = TransformerConfig(
+        vocab_size=len(MOVE_TO_ACTION),
+        output_size=128,
+        pos_encodings=PositionalEncodings.SINUSOID,
+        max_sequence_length=SEQUENCE_LENGTH + 2,
+        num_heads=4,
+        num_layers=2,
         embedding_dim=64,
         apply_post_ln=True,
         apply_qk_layernorm=False,
         use_causal_mask=False,
     )
 
-    predictor1 = get_predictor(model_path_1, config)
-    predictor2 = get_predictor(model_path_2, config)
+    predictor1 = get_predictor(model_path_1, config1)
+    predictor2 = get_predictor(model_path_2, config2)
 
     results = {"1_win": 0, "2_win": 0, "draw": 0}
+    side_results = {"white_win": 0, "black_win": 0, "draw": 0}
 
-    for i in range(10):
+    for i in range(25):
         # Game 1: engine1 as White
-        result, moves = play_game(predictor1, predictor2)
+        result, moves, fen = play_game(predictor1, predictor2)
         print(f"Game {2*i+1}: {result} ({moves} moves)")
         if result == "1-0":
             results["1_win"] += 1
+            side_results["white_win"] += 1
+            print("engine 1 won")
         elif result == "0-1":
             results["2_win"] += 1
+            side_results["black_win"] += 1
+            print("engine 2 won")
         else:
             results["draw"] += 1
+            side_results["draw"] += 1
+        
+        # print(fen)
 
         # Game 2: engine2 as White
-        result, moves = play_game(predictor2, predictor1)
+        result, moves, fen = play_game(predictor2, predictor1)
         print(f"Game {2*i+2}: {result} ({moves} moves)")
         if result == "1-0":
             results["2_win"] += 1
+            side_results["white_win"] += 1
+            print("engine 2 won")
         elif result == "0-1":
             results["1_win"] += 1
+            side_results["black_win"] += 1
+            print("engine 1 won")
         else:
             results["draw"] += 1
+            side_results["draw"] += 1
+        
+        # print(fen)
 
     print("\n=== Summary ===")
     print(f"Model 1 Wins: {results['1_win']}")
     print(f"Model 2 Wins: {results['2_win']}")
     print(f"Draws: {results['draw']}")
+    print("\n--- By Color ---")
+    print(f"White Wins: {side_results['white_win']}")
+    print(f"Black Wins: {side_results['black_win']}")
+    print(f"Draws: {side_results['draw']}")
 
 if __name__ == "__main__":
     main()
