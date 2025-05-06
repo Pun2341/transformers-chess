@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-from src.tokenizer import process_fen, process_move, CODERS
+from src.tokenizer import process_fen, process_move, CODERS, SEQUENCE_LENGTH
 from src.utils import Policy
 from src.bagz import BagReader
 
@@ -37,8 +37,7 @@ class ChessDataset(Dataset):
         self._return_buckets_edges, _ = _get_uniform_buckets_edges_values(
             num_return_buckets,
         )
-        self._sequence_length = tokenizer.SEQUENCE_LENGTH + \
-            2 if policy == Policy.ACTION_VALUE else tokenizer.SEQUENCE_LENGTH + 1
+        self._sequence_length = SEQUENCE_LENGTH + 2 if policy == Policy.ACTION_VALUE else SEQUENCE_LENGTH + 1
         self._loss_mask = np.full(
             shape=(self._sequence_length,),
             fill_value=True,

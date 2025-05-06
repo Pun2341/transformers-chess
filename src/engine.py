@@ -18,9 +18,11 @@ class Engine:
         best_bucket = -1
         for move in legal_moves:
             bucket = self._get_bucket(
-                self.predictor, self.board.fen, move).item()
+                self.predictor, move.uci()).item()
+            # print(bucket)
             if bucket > best_bucket:
                 best_move = move
+                best_bucket = bucket
         return best_move
 
     def get_best_move_from_fen(self, fen):
@@ -36,24 +38,24 @@ class Engine:
         return best_move
 
     def _get_bucket(self, predictor, move):
-        state = process_fen(self.board.fen)
+        state = process_fen(self.board.fen())
         action = process_move(move)
-        sequence = torch.cat([state, action])
-        result = predictor.predict(sequence.view(1, 78))
+        sequence = torch.cat([state, action, torch.Tensor([0]).to(torch.uint8)])
+        result = predictor.predict(sequence.view(1, 79))
+        # print(result)
         return torch.argmax(result[0][-1])
-
-    def do_move(self, move):
-        self.board.push(move)
 
     def computer_play(self):
         computer_move = self.get_best_move()
-        self.do_move(computer_move)
+        move_san = self.board.san(computer_move)
+        self.board.push(computer_move)
+        print("Computer plays:", move_san)
         return computer_move
 
     def human_play(self, move):
-        legal_moves = self.board.legal_moves
+        legal_moves = list(self.board.legal_moves)
+        move = self.board.parse_san(move)
         if move in legal_moves:
-            self.do_move(move)
-            computer_move = self.computer_play()
-            return computer_move
+            self.board.push(move)
+            return move
         return None
