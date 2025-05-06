@@ -17,14 +17,14 @@ def get_predictor(model_path, transformer_config):
 
 
 if __name__ == "__main__":
-    model_path = "src/Checkpoint_Epoch_33770.pt"
+    model_path = "src/checkpoint_epoch2_20250506_040633.pt"
     transformer_config = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
         output_size=num_return_buckets,
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
         num_heads=4,
-        num_layers=4,
+        num_layers=2,
         embedding_dim=64,
         apply_post_ln=True,
         apply_qk_layernorm=False,

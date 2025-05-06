@@ -50,10 +50,23 @@ def play_game(predictor_white, predictor_black, max_moves=100):
 
 
 def main():
-    model1_path = "src/checkpoint_epoch_74007.pt"
-    model2_path = "src/checkpoint_epoch1_20250504_092552.pt"  # You can change to another model
+    model_path_1 = "src/checkpoint_epoch1_20250506_031310.pt"
+    model_path_2 = "src/checkpoint_epoch1_20250504_092552.pt"
 
-    config = TransformerConfig(
+    config1 = TransformerConfig(
+        vocab_size=len(MOVE_TO_ACTION),
+        output_size=128,
+        pos_encodings=PositionalEncodings.SINUSOID,
+        max_sequence_length=SEQUENCE_LENGTH + 2,
+        num_heads=4,
+        num_layers=2,
+        embedding_dim=64,
+        apply_post_ln=True,
+        apply_qk_layernorm=False,
+        use_causal_mask=False,
+    )
+    
+    config2 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
         output_size=128,
         pos_encodings=PositionalEncodings.SINUSOID,
@@ -66,8 +79,8 @@ def main():
         use_causal_mask=False,
     )
 
-    predictor1 = get_predictor(model1_path, config)
-    predictor2 = get_predictor(model2_path, config)
+    predictor1 = get_predictor(model_path_1, config1)
+    predictor2 = get_predictor(model_path_2, config2)
 
     play_game(predictor1, predictor2)
 
