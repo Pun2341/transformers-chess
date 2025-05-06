@@ -1,20 +1,37 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from engine import get_best_move  # Replace with your model's function
+# app/backend/app.py
+import chess
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+class MoveRequest(BaseModel):
+    fen: str
 
+app = FastAPI()
 
-@app.route('/move', methods=['POST'])
-def move():
-    data = request.get_json()
-    fen = data.get('fen')
-    if not fen:
-        return jsonify({'error': 'FEN not provided'}), 400
-    move = get_best_move(fen)  # Implement this function in your model
-    return jsonify({'move': move})
+# Allow the React dev server (on localhost:3000) to talk to us
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # or ["*"] to allow all
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
 
+@app.post("/move")
+async def move(req: MoveRequest):
+    """
+    Dummy Black reply: always play e7e5 if legal; otherwise the first legal move.
+    """
+    try:
+        board = chess.Board(req.fen)
+    except Exception as e:
+        raise HTTPException(400, detail=f"Invalid FEN: {e}")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    desired = chess.Move.from_uci("e7e5")
+    if desired in board.legal_moves:
+        reply = desired
+    else:
+        # fallback to any legal move
+        reply = next(iter(board.legal_moves))
+
+    return {"uci": reply.uci()}
