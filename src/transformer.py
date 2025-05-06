@@ -258,6 +258,22 @@ def build_transformer_predictor(config: TransformerConfig) -> Predictor:
     model = TransformerDecoder(config)
     return Predictor(model)
 
+# -----------------
+# Initializer Wrapper
+# -----------------
+
+def initialize_weights(model):
+    for module in model.modules():
+        if isinstance(module, nn.Linear):
+            nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            nn.init.normal_(module.weight, mean=0.0, std=model.config.emb_init_scale)
+        elif isinstance(module, nn.LayerNorm):
+            nn.init.ones_(module.weight)
+            nn.init.zeros_(module.bias)
+
 # ---------
 # Test Case
 # ---------
@@ -294,5 +310,19 @@ def test_transformer_forward_pass():
     print("Transformer forward pass test passed!")
 
 
+def test_weight_initialization():
+    config = TransformerConfig(vocab_size=50, embedding_dim=32)
+    model = TransformerDecoder(config)
+    initialize_weights(model)
+
+    for name, param in model.named_parameters():
+        if 'weight' in name and param.requires_grad:
+            if torch.allclose(param, torch.zeros_like(param)):
+                raise AssertionError(f"{name} is all zeros — expected random init")
+
+    print("All weights appear to be initialized randomly.")
+
+
 if __name__ == "__main__":
     test_transformer_forward_pass()
+    test_weight_initialization()
