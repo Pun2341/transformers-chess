@@ -19,18 +19,14 @@ class Bot:
             apply_qk_layernorm=False,
             use_causal_mask=False,
         )
-
-        predictor = self.get_predictor(model_path, transformer_config)
-        starting_board = None
-        self.engine = Engine(predictor, starting_board)
-
-    def get_predictor(self, model_path, transformer_config):
         device = "cuda" if torch.cuda.is_available() else "cpu"
+
         model = TransformerDecoder(transformer_config)
         checkpoint = torch.load(model_path, map_location=device)
         model.load_state_dict(checkpoint['model_state'])
+
         predictor = Predictor(model)
-        return predictor
+        self.engine = Engine(predictor)
 
     def nextMove(self, board):
         try:
