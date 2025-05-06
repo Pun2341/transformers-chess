@@ -10,7 +10,7 @@ class MoveRequest(BaseModel):
     fen: str
 
 
-PATH = "../../checkpoints/CheckpointEpoch3Step80000.pt"
+PATH = "../../checkpoints/Epoch4.pt"
 
 app = FastAPI()
 bot = Bot(PATH)
