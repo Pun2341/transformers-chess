@@ -43,8 +43,8 @@ def play_game(predictor_white, predictor_black, max_moves=250):
 
 
 def main():
-    model_path_1 = "src/checkpoint_epoch2_20250506_040633.pt"
-    model_path_2 = "src/checkpoint_epoch2_20250504_102007.pt"
+    model_path_1 = "src/checkpoint_epoch5_step5544.pt"
+    model_path_2 = "src/checkpoint_epoch4_20250506_053148.pt"
 
     config1 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
@@ -52,7 +52,7 @@ def main():
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
         num_heads=4,
-        num_layers=2,
+        num_layers=4,
         embedding_dim=64,
         apply_post_ln=True,
         apply_qk_layernorm=False,
@@ -65,7 +65,7 @@ def main():
         pos_encodings=PositionalEncodings.SINUSOID,
         max_sequence_length=SEQUENCE_LENGTH + 2,
         num_heads=4,
-        num_layers=4,
+        num_layers=2,
         embedding_dim=64,
         apply_post_ln=True,
         apply_qk_layernorm=False,
@@ -78,7 +78,7 @@ def main():
     results = {"1_win": 0, "2_win": 0, "draw": 0}
     side_results = {"white_win": 0, "black_win": 0, "draw": 0}
 
-    for i in range(25):
+    for i in range(5):
         # Game 1: engine1 as White
         result, moves, fen = play_game(predictor1, predictor2)
         print(f"Game {2*i+1}: {result} ({moves} moves)")
