@@ -1,4 +1,4 @@
-from src.engine import Engine
+from src.engine import Engine, EngineWithHeuristics
 from src.transformer import TransformerConfig, TransformerDecoder, PositionalEncodings, Predictor
 from src.utils import MOVE_TO_ACTION
 from src.tokenizer import SEQUENCE_LENGTH
@@ -17,8 +17,10 @@ def get_predictor(model_path, transformer_config):
 
 def play_game(predictor_white, predictor_black, max_moves=100):
     board = chess.Board()
-    engine_white = Engine(predictor_white, starting_fen=board.fen())
-    engine_black = Engine(predictor_black, starting_fen=board.fen())
+    # engine_white = Engine(predictor_white, starting_fen=board.fen())
+    # engine_black = Engine(predictor_black, starting_fen=board.fen())
+    engine_white = EngineWithHeuristics(predictor_white, starting_fen=board.fen())
+    engine_black = EngineWithHeuristics(predictor_black, starting_fen=board.fen())
 
     move_count = 0
     print("Starting new game...\n")
@@ -50,8 +52,8 @@ def play_game(predictor_white, predictor_black, max_moves=100):
 
 
 def main():
-    model_path_1 = "src/checkpoint_epoch1_20250506_031310.pt"
-    model_path_2 = "src/checkpoint_epoch1_20250504_092552.pt"
+    model_path_1 = "src/checkpoint_epoch4_20250506_053148.pt"
+    model_path_2 = "src/checkpoint_epoch5_step5544.pt"
 
     config1 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),

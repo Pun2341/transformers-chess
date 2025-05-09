@@ -1,0 +1,18 @@
+Puzzle Evaluation Summary
+------------------------------
+Total puzzles evaluated: 973
+Weighted mean score: 0.333
+Estimated ELO (weighted mean-based): 1421
+
+Score distribution by rating bin:
+  ≤800: avg score = 0.640, puzzles = 74
+  800-999: avg score = 0.572, puzzles = 136
+  1000-1199: avg score = 0.499, puzzles = 154
+  1200-1399: avg score = 0.409, puzzles = 111
+  1400-1599: avg score = 0.341, puzzles = 112
+  1600-1799: avg score = 0.263, puzzles = 99
+  1800-1999: avg score = 0.247, puzzles = 98
+  2000-2199: avg score = 0.275, puzzles = 91
+  2200-2399: avg score = 0.148, puzzles = 54
+  2400-2599: avg score = 0.080, puzzles = 33
+  2600-2799: avg score = 0.269, puzzles = 11
