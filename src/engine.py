@@ -34,10 +34,28 @@ class Engine:
 
         return random.choice(best_moves)
 
+    def get_best_move_from_fen(self, fen):
+        self.board = chess.Board(fen)
+        legal_moves = self.board.legal_moves
+        best_move = []
+        best_bucket = -1
+        for move in legal_moves:
+            bucket = self._get_bucket(
+                self.predictor, move.uci()).item()
+            if bucket > best_bucket:
+                best_move = [move]
+                best_bucket = bucket
+            elif bucket == best_bucket:
+                best_move.append(move)
+        rand = random.randint(0, len(best_move)-1)
+        print(len(best_move), best_bucket)
+        return best_move[rand]
+
     def _get_bucket(self, predictor, move):
         state = process_fen(self.board.fen())
         action = process_move(move)
-        sequence = torch.cat([state, action, torch.Tensor([0]).to(torch.uint8)])
+        sequence = torch.cat(
+            [state, action, torch.Tensor([0]).to(torch.uint8)])
         result = predictor.predict(sequence.view(1, 79))
         return torch.argmax(result[0][-1])
 
