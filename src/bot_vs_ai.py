@@ -45,8 +45,8 @@ model.load_state_dict(checkpoint["model_state"])
 model.eval()
 
 predictor = Predictor(model)
-engine = Engine(predictor)
-# engine = EngineWithHeuristics(predictor)
+# engine = Engine(predictor)
+engine = EngineWithHeuristics(predictor)
 
 
 # Play the game
@@ -64,7 +64,17 @@ def play_game(game_id):
                 engine.board = chess.Board()
             else:
                 engine.board = chess.Board(fen)
-            my_color = chess.WHITE if event["white"]["id"] == account["id"] else chess.BLACK
+            
+            white_id = event["white"].get("id")
+            black_id = event["black"].get("id")
+
+            if black_id == account["id"]:
+                my_color = chess.BLACK
+            elif white_id == account["id"]:
+                my_color = chess.WHITE
+            else:
+                raise ValueError("Bot is not a participant in this game.")
+            
             if my_color == chess.WHITE:
                 move = engine.get_best_move()
                 engine.board.push(move)
@@ -103,7 +113,6 @@ def play_game(game_id):
 if __name__ == "__main__":
     print("Listening for challenges...")
     for event in client.bots.stream_incoming_events():
-        print("Received event:", event)
         if event["type"] == "gameStart":
             game_id = event["game"]["id"]
             play_game(game_id)

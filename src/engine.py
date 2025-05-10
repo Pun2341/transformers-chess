@@ -79,14 +79,14 @@ class EngineWithHeuristics(Engine):
     def __init__(self, predictor: Predictor, starting_fen: str = None, weights=None):
         super().__init__(predictor, starting_fen)
         self.weights = weights or {
-            'material':     1.0, # 2.8,
-            'center':       1.0, # 2.5,
-            'check':        5.0, # 3.4, 
-            'capture':      10.0, # 2.2, 
-            'development':  1.0, # 2.3,
-            'blunder':      10.0, # 2.4, 
-            'trade':        5.0, # 2.1, 
-            'hanging':      10.0,
+            'material':     3.0, # 2.8,
+            'center':       3.0, # 2.5,
+            'check':        10.0, # 3.4, 
+            'capture':      15.0, # 2.2, 
+            'development':  3.0, # 2.3,
+            'blunder':      15.0, # 2.4, 
+            'trade':        10.0, # 2.1, 
+            'hanging':      15.0,
         }
 
     def get_best_move(self):
