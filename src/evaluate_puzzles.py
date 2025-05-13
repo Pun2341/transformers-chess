@@ -62,7 +62,7 @@ def estimate_elo_from_score(target_score, bin_scores_map):
         return None
 
 
-def evaluate_puzzles(csv_path="src/puzzles.csv", max_puzzles=None, engine=None):
+def evaluate_puzzles(csv_path="data/puzzles.csv", max_puzzles=None, engine=None):
     df = pd.read_csv(csv_path)
     if max_puzzles:
         df = df.head(max_puzzles)
@@ -126,7 +126,7 @@ def evaluate_puzzles(csv_path="src/puzzles.csv", max_puzzles=None, engine=None):
 
     # Save results
     results_df = pd.DataFrame(detailed_results)
-    results_df.to_csv("puzzle_eval_results.csv", index=False)
+    results_df.to_csv("results/puzzle_eval_results.csv", index=False)
 
     # Plot average accuracy per bin
     bins_sorted = sorted(bin_scores.keys(), key=lambda x: int(x.split('-')[0].replace('≤', '0')))
@@ -139,11 +139,11 @@ def evaluate_puzzles(csv_path="src/puzzles.csv", max_puzzles=None, engine=None):
     plt.title("Transformer Puzzle Accuracy by Rating")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig("puzzle_accuracy_by_rating.png")
+    plt.savefig("results/puzzle_accuracy_by_rating.png")
     plt.close()
 
     print(f"\nEvaluated {len(results_df)} puzzles")
-    print("Results saved to 'puzzle_eval_results.csv' and plot saved to 'puzzle_accuracy_by_rating.png'")
+    print("Results saved to 'results/puzzle_eval_results.csv' and plot saved to 'results/puzzle_accuracy_by_rating.png'")
     
     
     # Compute the weighted mean and median score over all puzzles
@@ -160,7 +160,7 @@ def evaluate_puzzles(csv_path="src/puzzles.csv", max_puzzles=None, engine=None):
     estimated_weighted_mean_elo = estimate_elo_from_score(weighted_mean_score, bin_scores)
     # estimated_weighted_median_elo = estimate_elo_from_score(weighted_median_score, bin_scores)
     
-    with open("puzzle_eval_summary.txt", "w") as f:
+    with open("results/puzzle_eval_summary.txt", "w") as f:
         f.write(f"Puzzle Evaluation Summary\n")
         f.write(f"{'-'*30}\n")
         f.write(f"Total puzzles evaluated: {len(results_df)}\n")
@@ -177,4 +177,4 @@ def evaluate_puzzles(csv_path="src/puzzles.csv", max_puzzles=None, engine=None):
 
 
 if __name__ == "__main__":
-    evaluate_puzzles("src/puzzles.csv", max_puzzles=1000)
+    evaluate_puzzles("data/puzzles.csv", max_puzzles=1000)
