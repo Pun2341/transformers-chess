@@ -1,4 +1,4 @@
-from src.engine import Engine
+from src.engine import EngineWithHeuristics
 from src.transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
 from src.utils import MOVE_TO_ACTION
 from src.tokenizer import SEQUENCE_LENGTH
@@ -26,7 +26,7 @@ class Bot:
         model.load_state_dict(checkpoint['model_state'])
 
         predictor = Predictor(model)
-        self.engine = Engine(predictor)
+        self.engine = EngineWithHeuristics(predictor)
 
     def nextMove(self, board):
         try:
