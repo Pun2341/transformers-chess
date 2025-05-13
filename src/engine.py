@@ -44,13 +44,14 @@ class Engine:
         for move in legal_moves:
             bucket = self._get_bucket(
                 self.predictor, move.uci()).item()
+            print(move.uci(), bucket)
             if bucket > best_bucket:
                 best_move = [move]
                 best_bucket = bucket
             elif bucket == best_bucket:
                 best_move.append(move)
         rand = random.randint(0, len(best_move)-1)
-        print(len(best_move), best_bucket)
+        # print(len(best_move), best_bucket)
         return best_move[rand]
 
     def _get_bucket(self, predictor, move):
