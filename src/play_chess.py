@@ -17,7 +17,7 @@ def get_predictor(model_path, transformer_config):
 
 
 if __name__ == "__main__":
-    model_path = "src/checkpoint_epoch2_20250506_040633.pt"
+    model_path = "src/checkpoint_epoch4_20250506_053148.pt"
     transformer_config = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
         output_size=num_return_buckets,
