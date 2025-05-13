@@ -70,6 +70,7 @@ the root directory (`transformers-chess/`) using two different terminals:
 uvicorn app.backend.app:app --reload --host 0.0.0.0 --port 8000
 
 # Open a new terminal
+npm install --prefix app/frontend  # First time setup
 npm start --prefix app/frontend
 ```
 
