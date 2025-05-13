@@ -57,8 +57,14 @@ To run our inference code, enter the following command from the root directory (
 python -m src.play_chess
 ```
 
-To play against our bot, enter the following command from the root directory using
-two different terminals
+To run our puzzle evaluation code, enter the following command from the root directory (`transformers-chess/`):
+
+```bash
+python -m src.evaluate_puzzles
+```
+
+To play against our bot using the web interface, enter the following command from 
+the root directory (`transformers-chess/`) using two different terminals:
 
 ```bash
 uvicorn app.backend.app:app --reload --host 0.0.0.0 --port 8000
