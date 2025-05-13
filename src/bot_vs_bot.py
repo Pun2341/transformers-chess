@@ -1,5 +1,5 @@
 import chess
-from src.engine import Engine
+from src.engine import Engine, EngineWithHeuristics
 from src.transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
 from src.utils import MOVE_TO_ACTION
 from src.tokenizer import SEQUENCE_LENGTH
@@ -19,7 +19,9 @@ def get_predictor(model_path, transformer_config):
 def play_game(predictor_white, predictor_black, max_moves=250):
     board = chess.Board()
     engine_white = Engine(predictor_white, starting_fen=board.fen())
-    engine_black = Engine(predictor_black, starting_fen=board.fen())
+    # engine_black = Engine(predictor_black, starting_fen=board.fen())
+    # engine_white = EngineWithHeuristics(predictor_white, starting_fen=board.fen())
+    engine_black = EngineWithHeuristics(predictor_black, starting_fen=board.fen())
 
     move_count = 0
     while not board.is_game_over() and move_count < max_moves:
@@ -43,8 +45,8 @@ def play_game(predictor_white, predictor_black, max_moves=250):
 
 
 def main():
-    model_path_1 = "src/checkpoint_epoch1_20250506_031310.pt"
-    model_path_2 = "src/checkpoint_epoch3_20250506_042529.pt"
+    model_path_1 = "src/checkpoint_epoch4_20250506_053148.pt"
+    model_path_2 = "src/checkpoint_epoch4_20250506_053148.pt"
 
     config1 = TransformerConfig(
         vocab_size=len(MOVE_TO_ACTION),
@@ -78,7 +80,7 @@ def main():
     results = {"1_win": 0, "2_win": 0, "draw": 0}
     side_results = {"white_win": 0, "black_win": 0, "draw": 0}
 
-    for i in range(25):
+    for i in range(5):
         # Game 1: engine1 as White
         result, moves, fen = play_game(predictor1, predictor2)
         print(f"Game {2*i+1}: {result} ({moves} moves)")
@@ -93,8 +95,6 @@ def main():
         else:
             results["draw"] += 1
             side_results["draw"] += 1
-        
-        # print(fen)
 
         # Game 2: engine2 as White
         result, moves, fen = play_game(predictor2, predictor1)
@@ -110,8 +110,6 @@ def main():
         else:
             results["draw"] += 1
             side_results["draw"] += 1
-        
-        # print(fen)
 
     print("\n=== Summary ===")
     print(f"Model 1 Wins: {results['1_win']}")

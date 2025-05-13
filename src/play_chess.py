@@ -1,4 +1,4 @@
-from src.engine import Engine
+from src.engine import Engine, EngineWithHeuristics
 from src.transformer import TransformerConfig, PositionalEncodings, TransformerDecoder, Predictor
 from src.utils import MOVE_TO_ACTION
 from src.tokenizer import SEQUENCE_LENGTH
@@ -33,7 +33,8 @@ if __name__ == "__main__":
 
     predictor = get_predictor(model_path, transformer_config)
     starting_board = None
-    chess_engine = Engine(predictor, starting_board)
+    # chess_engine = Engine(predictor, starting_board)
+    chess_engine = EngineWithHeuristics(predictor, starting_board)
 
     while True:
         color = input("Black or White? ")
