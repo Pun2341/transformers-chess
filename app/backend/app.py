@@ -1,16 +1,17 @@
 # app/backend/app.py
+# npm start
 # uvicorn app:app --reload --host 0.0.0.0 --port 8000
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from bot import Bot
+from app.backend.bot import Bot
 
 
 class MoveRequest(BaseModel):
     fen: str
 
 
-PATH = "../../checkpoints/Epoch4.pt"
+PATH = "checkpoints/Epoch4.pt"
 
 app = FastAPI()
 bot = Bot(PATH)

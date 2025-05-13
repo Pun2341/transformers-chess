@@ -12,3 +12,13 @@ To run our inference code, enter the following command from the root directory (
 ```bash
 python -m src.play_chess
 ```
+
+To play against our bot, enter the following command from the root directory using
+two different terminals
+
+```bash
+uvicorn app.backend.app:app --reload --host 0.0.0.0 --port 8000
+
+# Open a new terminal
+npm start --prefix app/frontend
+```
